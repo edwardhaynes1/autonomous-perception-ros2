@@ -1,0 +1,10 @@
+std_msgs/Header header
+string class_name
+int32  class_id
+float32 confidence
+int32 x_min
+int32 y_min
+int32 x_max
+int32 y_max
+float32 cx
+float32 cy

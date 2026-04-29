@@ -32,6 +32,7 @@ Gazebo Harmonic simulation with PX4 SITL x500 depth drone:
 YOLOv8n model running in real-time on the drone's RGB camera stream, publishing annotated images with bounding boxes overlaid:
 
 ![RViz YOLO Detections](docs/rviz_yolo_detections.png)
+![RViz YOLO Detection2](docs/rviz_yolo_detection2.png)
 
 ### Demo Video
 

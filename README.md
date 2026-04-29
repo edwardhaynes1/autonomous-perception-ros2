@@ -2,7 +2,7 @@
 
 **DevOps for Cyber-Physical Systems, HS 2026 — Exercise 08: Perception**
 
-**ROS2 Version:** Jazzy Jalisco  
+**ROS2 Version:** Jazzy Jalisco
 
 ## Repository
 [https://github.com/edwardhaynes1/autonomous-perception-ros2](https://github.com/edwardhaynes1/autonomous-perception-ros2)
@@ -13,9 +13,9 @@
 
 | Package | Description |
 |---------|-------------|
-| `perception_interfaces` | Custom messages: `Detection2D`, `Detection2DArray` |
-| `yolo_detector` | Task 1 — YOLOv8 real-time detection + annotated image publisher |
-| `depth_estimator` | Task 2 — Depth estimation, point cloud, RANSAC ground segmentation |
+| `perception_interfaces` | Custom ROS2 messages: `Detection2D`, `Detection2DArray` |
+| `yolo_detector` | Task 1 — YOLOv8 real-time object detection + annotated image publisher |
+| `depth_estimator` | Task 2 — Depth estimation, coloured point cloud, RANSAC ground segmentation |
 
 ---
 
@@ -32,11 +32,10 @@ Gazebo Harmonic simulation with PX4 SITL x500 depth drone:
 YOLOv8n model running in real-time on the drone's RGB camera stream, publishing annotated images with bounding boxes overlaid:
 
 ![RViz YOLO Detections](docs/rviz_yolo_detections.png)
-![RViz YOLO Detection2](docs/rviz_yolo_detection2.png)
 
 ### Demo Video
 
-https://github.com/edwardhaynes1/autonomous-perception-ros2/blob/main/docs/demo_video.mp4
+[▶ Watch Demo Video](https://github.com/edwardhaynes1/autonomous-perception-ros2/blob/main/docs/demo_video.mp4)
 
 ### Custom Message: `Detection2DArray`
 
@@ -79,7 +78,7 @@ float32 cy
 
 ## Task 2: Depth Estimation and 3D Point Cloud
 
-ROS2 node subscribing to RGB + depth topics, generating coloured point clouds and performing RANSAC ground plane segmentation. Publishes three topics:
+ROS2 node subscribing to synchronised RGB + depth topics, back-projecting to 3D using camera intrinsics, and performing RANSAC ground plane segmentation. Publishes three PointCloud2 topics:
 
 | Topic | Description |
 |-------|-------------|
@@ -91,14 +90,19 @@ ROS2 node subscribing to RGB + depth topics, generating coloured point clouds an
 
 ## Setup
 
+### Prerequisites
+- Docker Desktop
+- Git
+
 ### 1. Clone the simulation environment
 ```bash
 git clone https://github.com/erdemuysalx/px4-sim.git
 cd px4-sim
 git clone https://github.com/edwardhaynes1/autonomous-perception-ros2.git perception_ws
+cp perception_ws/docker-compose.override.yml .
 ```
 
-### 2. Build Docker image
+### 2. Fix line endings and build Docker image
 ```bash
 sed -i 's/\r//' px4_entrypoint.sh ros_entrypoint.sh
 ./build.sh --all
@@ -119,12 +123,12 @@ colcon build --symlink-install
 source install/setup.bash
 ```
 
-### 5. Launch PX4 SITL + Gazebo
+### 5. Launch PX4 SITL + Gazebo (Terminal 1)
 ```bash
 cd /root/PX4-Autopilot && make px4_sitl gz_x500_depth
 ```
 
-### 6. Launch perception nodes
+### 6. Launch perception nodes (Terminal 2)
 ```bash
 source /opt/ros/jazzy/setup.bash
 source /root/perception_ws/install/setup.bash
@@ -132,7 +136,10 @@ ros2 launch yolo_detector perception_launch.py
 ```
 
 ### 7. Visualise in RViz2
+Open `http://localhost:6080/vnc.html` (password: `1234`) then:
 ```bash
+source /opt/ros/jazzy/setup.bash
+source /root/perception_ws/install/setup.bash
 rviz2
 ```
 Add display → By topic → `/perception/annotated_image` → Image
@@ -145,6 +152,14 @@ ros2 topic list
 ros2 topic hz /perception/detections
 ros2 topic echo /perception/detections
 ```
+
+---
+
+## Issues encountered
+- `setuptools>=80` breaks colcon build — pinned to `<70`
+- `numpy>=2` conflicts with cv_bridge compiled against numpy 1.x — pinned to `<2`
+- Windows line endings in entrypoint scripts caused container restart loop — fixed with `sed`
+- Base Docker image not available for linux/amd64 — built locally with `./build.sh --all`
 
 ---
 

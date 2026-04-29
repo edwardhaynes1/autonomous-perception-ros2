@@ -35,6 +35,7 @@ YOLOv8n model running in real-time on the drone's RGB camera stream, publishing 
 
 ### Demo Video
 
+https://github.com/user-attachments/assets/6bd4e84f-01a3-4981-a216-0ab47192407b
 https://github.com/edwardhaynes1/autonomous-perception-ros2/blob/main/docs/demo_video.mp4
 
 ### Custom Message: `Detection2DArray`
